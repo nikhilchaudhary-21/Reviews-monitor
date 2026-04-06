@@ -1,0 +1,49 @@
+name: Recharge Review Monitor
+
+on:
+  schedule:
+    - cron: "0 * * * *"   # every hour
+  workflow_dispatch:
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+
+      - name: Restore review state
+        uses: actions/cache@v4
+        with:
+          path: review_state.json
+          key: review-state-${{ github.run_id }}
+          restore-keys: |
+            review-state-
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run monitor
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: python recharge_monitor.py
+
+      - name: Save review state
+        uses: actions/cache/save@v4
+        if: always()
+        with:
+          path: review_state.json
+          key: review-state-${{ github.run_id }}
