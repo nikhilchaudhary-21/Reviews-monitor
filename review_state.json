@@ -1,0 +1,116 @@
+{
+    "subscription-payments": {
+        "1": {
+            "count": 116,
+            "last_id": "2110630"
+        },
+        "2": {
+            "count": 16,
+            "last_id": null
+        }
+    },
+    "shopify-subscriptions": {
+        "1": {
+            "count": 127,
+            "last_id": "2146105"
+        },
+        "2": {
+            "count": 55,
+            "last_id": "2148110"
+        }
+    },
+    "kaching-subscriptions": {
+        "1": {
+            "count": 3,
+            "last_id": "2141672"
+        }
+    },
+    "seal-subscriptions": {
+        "1": {
+            "count": 19,
+            "last_id": null
+        },
+        "2": {
+            "count": 7,
+            "last_id": null
+        }
+    },
+    "subscriptions-by-appstle": {
+        "1": {
+            "count": 42,
+            "last_id": "2137457"
+        },
+        "2": {
+            "count": 14,
+            "last_id": null
+        }
+    },
+    "joy-subscription": {
+        "1": {
+            "count": 5,
+            "last_id": null
+        },
+        "2": {
+            "count": 2,
+            "last_id": null
+        }
+    },
+    "easy-subscription": {
+        "1": {
+            "count": 1,
+            "last_id": null
+        }
+    },
+    "recurring-order-subscription": {
+        "1": {
+            "count": 2,
+            "last_id": null
+        },
+        "2": {
+            "count": 1,
+            "last_id": null
+        }
+    },
+    "recurpay-subscriptions": {
+        "1": {
+            "count": 2,
+            "last_id": null
+        },
+        "2": {
+            "count": 2,
+            "last_id": null
+        }
+    },
+    "skio": {
+        "1": {
+            "count": 1,
+            "last_id": null
+        }
+    },
+    "stayai-subscriptions": {
+        "1": {
+            "count": 1,
+            "last_id": null
+        }
+    },
+    "bold-subscriptions": {
+        "1": {
+            "count": 43,
+            "last_id": null
+        },
+        "2": {
+            "count": 9,
+            "last_id": null
+        }
+    },
+    "recurring-invoices": {
+        "1": {
+            "count": 7,
+            "last_id": null
+        },
+        "2": {
+            "count": 2,
+            "last_id": null
+        }
+    }
+}
