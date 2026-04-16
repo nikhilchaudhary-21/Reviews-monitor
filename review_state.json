@@ -112,5 +112,11 @@
             "count": 2,
             "last_id": null
         }
+    },
+    "ego-subscriptions": {
+        "1": {
+            "count": 1,
+            "last_id": "2164344"
+        }
     }
 }
