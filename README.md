@@ -1,6 +1,6 @@
 # Shopify Subscription Apps — Negative Review Monitor
 
-Monitors 1-star and 2-star reviews across 17 competitor subscription apps on the Shopify App Store. Sends Slack alerts for new negative reviews. Runs hourly via GitHub Actions.
+Monitors 1-star and 2-star reviews across 17 competitor subscription apps on the Shopify App Store. Sends Slack alerts and logs every new negative review to a Google Sheet. Runs twice daily via GitHub Actions.
 
 ---
 
@@ -10,7 +10,7 @@ Monitors 1-star and 2-star reviews across 17 competitor subscription apps on the
 2. Compares against saved counts from last run
 3. If count increased → scrapes new reviews (sorted newest first)
 4. Filters out reviews older than `ALERT_CUTOFF_DATE`
-5. Sends each new review to Slack
+5. Sends each new review to Slack **and** appends a row to the Google Sheet
 6. Saves state for next run
 
 ---
@@ -51,35 +51,57 @@ recharge_monitor.py
 requirements.txt
 ```
 
-### 2. Add GitHub Secret
+### 2. Add GitHub Secrets
 
 Go to **Settings → Secrets and variables → Actions → New repository secret**
 
 | Secret | Value |
 |--------|-------|
 | `SLACK_WEBHOOK_URL` | Your Slack Incoming Webhook URL |
+| `GOOGLE_CREDENTIALS_JSON` | Full contents of the Google service account JSON key file |
+| `GOOGLE_SHEET_ID` | The sheet ID from `https://docs.google.com/spreadsheets/d/<ID>/edit` |
 
-> Get a webhook URL from: https://api.slack.com/messaging/webhooks
+> Slack webhook: https://api.slack.com/messaging/webhooks
 
-### 3. Install dependencies (local testing)
+### 3. Google Sheets setup (one-time)
 
-```bash
-pip install requests beautifulsoup4
+1. In [Google Cloud Console](https://console.cloud.google.com/), create a project and enable both **Google Sheets API** and **Google Drive API**.
+2. Create a **Service Account** → generate a JSON key → download it.
+3. Create the destination Google Sheet, then **Share** it with the service account email (the `client_email` field in the JSON) as **Editor**.
+4. Paste the full JSON contents into the `GOOGLE_CREDENTIALS_JSON` secret, and the sheet ID into `GOOGLE_SHEET_ID`.
+
+The script auto-creates a tab named `Negative Reviews` with this header:
+
+```
+App | Rating | Store | Review Date | Review Text | Link | Timestamp
 ```
 
-### 4. Local test (no Slack)
+To use a different tab name, set the `GOOGLE_SHEET_TAB` env var.
+
+### 4. Install dependencies (local testing)
+
+```bash
+pip install -r requirements.txt
+```
+
+### 5. Local test (no Slack, no Sheets)
 
 ```bash
 python recharge_monitor.py
 ```
 
-Slack webhook nahi set hoga toh messages console pe print honge.
+Agar `SLACK_WEBHOOK_URL` ya Sheets credentials set nahi honge, woh step skip ho jayega — script crash nahi karega.
 
-### 5. Local test (with Slack)
+### 6. Local test (full)
 
 ```bash
-SLACK_WEBHOOK_URL=https://hooks.slack.com/services/xxx python recharge_monitor.py
+export SLACK_WEBHOOK_URL=https://hooks.slack.com/services/xxx
+export GOOGLE_CREDENTIALS_JSON="$(cat path/to/service-account.json)"
+export GOOGLE_SHEET_ID=your-sheet-id
+python recharge_monitor.py
 ```
+
+> ⚠️ Never commit the service account JSON file. `.gitignore` already blocks `*.json` (with `review_state.json` whitelisted).
 
 ---
 
@@ -131,6 +153,18 @@ Link: https://apps.shopify.com/reviews/705893
 
 ## Schedule
 
-Runs every hour via cron: `0 * * * *`
+Runs twice daily via cron: `0 0,12 * * *` (00:00 and 12:00 UTC = 05:30 AM and 05:30 PM IST).
 
 Can also be triggered manually from **Actions → Recharge Review Monitor → Run workflow**.
+
+---
+
+## Google Sheet output
+
+Each new review appends one row:
+
+| App | Rating | Store | Review Date | Review Text | Link | Timestamp |
+|-----|--------|-------|-------------|-------------|------|-----------|
+| Recharge Subscriptions | 1 | Korean Fairy Skin Care | July 9, 2024 | This app caused chaos... | https://apps.shopify.com/reviews/705893 | 2026-05-01 12:00:00 UTC |
+
+`Timestamp` is when the row was logged (UTC), not the review date.
