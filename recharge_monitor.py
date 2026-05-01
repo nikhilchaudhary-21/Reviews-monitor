@@ -16,9 +16,12 @@ from bs4 import BeautifulSoup
 from datetime import datetime, timezone
 
 # ── Config ───────────────────────────────────────────────────
-SLACK_WEBHOOK_URL = os.environ.get("SLACK_WEBHOOK_URL", "")
-STATE_FILE        = os.environ.get("STATE_FILE", "review_state.json")
-WATCH_RATINGS     = [1, 2]
+SLACK_WEBHOOK_URL       = os.environ.get("SLACK_WEBHOOK_URL", "")
+STATE_FILE              = os.environ.get("STATE_FILE", "review_state.json")
+GOOGLE_CREDENTIALS_JSON = os.environ.get("GOOGLE_CREDENTIALS_JSON", "")
+GOOGLE_SHEET_ID         = os.environ.get("GOOGLE_SHEET_ID", "")
+GOOGLE_SHEET_TAB        = os.environ.get("GOOGLE_SHEET_TAB", "Negative Reviews")
+WATCH_RATINGS           = [1, 2]
 
 # Only alert on reviews newer than this date.
 # On first run, this acts as a hard cutoff — no spam from old reviews.
@@ -181,6 +184,78 @@ def build_slack_message(review: dict, app_name: str) -> str:
         f"*Review:* {preview}\n"
         f"*Link:* {review['link']}"
     )
+
+
+# ════════════════════════════════════════════
+#  GOOGLE SHEETS
+# ════════════════════════════════════════════
+
+SHEET_HEADER = ["App", "Rating", "Store", "Review Date", "Review Text", "Link", "Timestamp"]
+
+_sheet_handle = None  # cached worksheet
+
+
+def get_sheet():
+    """Lazy-init worksheet. Returns None if credentials missing or auth fails."""
+    global _sheet_handle
+    if _sheet_handle is not None:
+        return _sheet_handle
+
+    if not GOOGLE_CREDENTIALS_JSON or not GOOGLE_SHEET_ID:
+        print("[SHEETS] Credentials or sheet ID not set. Skipping Sheets logging.")
+        return None
+
+    try:
+        import gspread
+        from google.oauth2.service_account import Credentials
+
+        creds_dict = json.loads(GOOGLE_CREDENTIALS_JSON)
+        scopes = [
+            "https://www.googleapis.com/auth/spreadsheets",
+            "https://www.googleapis.com/auth/drive",
+        ]
+        creds = Credentials.from_service_account_info(creds_dict, scopes=scopes)
+        client = gspread.authorize(creds)
+        spreadsheet = client.open_by_key(GOOGLE_SHEET_ID)
+
+        try:
+            ws = spreadsheet.worksheet(GOOGLE_SHEET_TAB)
+        except gspread.WorksheetNotFound:
+            ws = spreadsheet.add_worksheet(title=GOOGLE_SHEET_TAB, rows=1000, cols=len(SHEET_HEADER))
+            ws.append_row(SHEET_HEADER, value_input_option="USER_ENTERED")
+            print(f"[SHEETS] Created tab '{GOOGLE_SHEET_TAB}' with header.")
+
+        # Ensure header exists (in case tab was created manually and is empty)
+        first_row = ws.row_values(1)
+        if not first_row:
+            ws.append_row(SHEET_HEADER, value_input_option="USER_ENTERED")
+
+        _sheet_handle = ws
+        print(f"[SHEETS] Connected to '{GOOGLE_SHEET_TAB}'.")
+        return ws
+    except Exception as e:
+        print(f"[SHEETS] Auth/connect failed: {e}")
+        return None
+
+
+def append_to_sheet(review: dict, app_name: str):
+    ws = get_sheet()
+    if ws is None:
+        return
+    row = [
+        app_name,
+        review["rating"],
+        review["store"],
+        review["date"],
+        review["text"],
+        review["link"],
+        datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC"),
+    ]
+    try:
+        ws.append_row(row, value_input_option="USER_ENTERED")
+        print(f"[SHEETS] Logged review {review['id']}")
+    except Exception as e:
+        print(f"[SHEETS] Append failed for {review['id']}: {e}")
 
 
 # ════════════════════════════════════════════
@@ -392,6 +467,7 @@ def main():
 
             for review in new_reviews:
                 send_slack(build_slack_message(review, app_name))
+                append_to_sheet(review, app_name)
                 time.sleep(1)
 
         time.sleep(2)  # Polite gap between apps
