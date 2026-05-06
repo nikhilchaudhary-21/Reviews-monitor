@@ -176,10 +176,11 @@ def build_slack_message(review: dict, app_name: str) -> str:
     emoji   = RATING_EMOJI.get(review["rating"], "⚠️")
     label   = RATING_LABEL.get(review["rating"], f"{review['rating']}-Star")
     preview = review["text"][:300] + "..." if len(review["text"]) > 300 else review["text"]
+    country = review.get("country", "Unknown")
 
     return (
         f"{emoji} *New {label} Review — {app_name}* {emoji}\n\n"
-        f"*Store:* {review['store']}\n"
+        f"*Store:* {review['store']} ({country})\n"
         f"*Date:* {review['date']}\n"
         f"*Review:* {preview}\n"
         f"*Link:* {review['link']}"
@@ -190,7 +191,7 @@ def build_slack_message(review: dict, app_name: str) -> str:
 #  GOOGLE SHEETS
 # ════════════════════════════════════════════
 
-SHEET_HEADER = ["App", "Rating", "Store", "Review Date", "Review Text", "Link", "Timestamp"]
+SHEET_HEADER = ["App", "Rating", "Store", "Country", "Review Date", "Review Text", "Link", "Timestamp"]
 
 _sheet_handle = None  # cached worksheet
 
@@ -246,6 +247,7 @@ def append_to_sheet(review: dict, app_name: str):
         app_name,
         review["rating"],
         review["store"],
+        review.get("country", "Unknown"),
         review["date"],
         review["text"],
         review["link"],
@@ -384,10 +386,47 @@ def _extract_review_id(div) -> str | None:
     return None
 
 
+def _extract_country(div) -> str:
+    """
+    Extract reviewer country from the sidebar info div.
+    HTML structure (inside data-merchant-review div):
+        <div class="tw-order-1 ...">
+            <div class="tw-text-heading-xs ...">  <- store name + button
+            <div>Hong Kong SAR</div>              <- country  (first plain div)
+            <div>About 1 month using the app</div>
+        </div>
+    """
+    try:
+        # div here is the data-merchant-review container itself
+        info_div = div.find("div", class_=lambda c: c and "tw-order-1" in c)
+        if not info_div:
+            return "Unknown"
+
+        # Collect direct child divs that are plain text (no nested buttons/svgs)
+        plain_divs = []
+        for child in info_div.find_all("div", recursive=False):
+            # Skip the store-name heading div (contains a span + button)
+            if child.find("button"):
+                continue
+            text = child.get_text(strip=True)
+            if text:
+                plain_divs.append(text)
+
+        # plain_divs[0] = country, plain_divs[1] = duration
+        if plain_divs:
+            return plain_divs[0]
+    except Exception as e:
+        print(f"[PARSE] Country extraction error: {e}")
+
+    return "Unknown"
+
+
 def _parse_review(div, review_id: str, rating: int) -> dict | None:
     try:
         store_span = div.find("span", attrs={"title": True})
         store_name = store_span["title"] if store_span else "Unknown Store"
+
+        country = _extract_country(div)
 
         date_el = div.find(
             "div", class_=lambda c: c and "tw-text-fg-tertiary" in c and "tw-text-body-xs" in c
@@ -398,12 +437,13 @@ def _parse_review(div, review_id: str, rating: int) -> dict | None:
         text = content_el.get_text(separator=" ", strip=True) if content_el else "N/A"
 
         return {
-            "id":     review_id,
-            "store":  store_name,
-            "date":   date,
-            "text":   text,
-            "rating": rating,
-            "link":   f"https://apps.shopify.com/reviews/{review_id}" if review_id else SHOPIFY_BASE,
+            "id":      review_id,
+            "store":   store_name,
+            "country": country,
+            "date":    date,
+            "text":    text,
+            "rating":  rating,
+            "link":    f"https://apps.shopify.com/reviews/{review_id}" if review_id else SHOPIFY_BASE,
         }
     except Exception as e:
         print(f"[PARSE] Error on review {review_id}: {e}")
