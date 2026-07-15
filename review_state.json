@@ -11,12 +11,12 @@
     },
     "shopify-subscriptions": {
         "1": {
-            "count": 141,
-            "last_id": "2263065"
+            "count": 146,
+            "last_id": "2280877"
         },
         "2": {
-            "count": 60,
-            "last_id": "2262067"
+            "count": 63,
+            "last_id": "2279158"
         }
     },
     "kaching-subscriptions": {
@@ -37,8 +37,8 @@
     },
     "subscriptions-by-appstle": {
         "1": {
-            "count": 39,
-            "last_id": "2137457"
+            "count": 40,
+            "last_id": "2276765"
         },
         "2": {
             "count": 13,
@@ -47,8 +47,8 @@
     },
     "joy-subscription": {
         "1": {
-            "count": 4,
-            "last_id": null
+            "count": 5,
+            "last_id": "2209485"
         },
         "2": {
             "count": 1,
@@ -95,7 +95,7 @@
     },
     "bold-subscriptions": {
         "1": {
-            "count": 48,
+            "count": 47,
             "last_id": "2251640"
         },
         "2": {
@@ -105,7 +105,7 @@
     },
     "recurring-invoices": {
         "1": {
-            "count": 7,
+            "count": 8,
             "last_id": null
         },
         "2": {
