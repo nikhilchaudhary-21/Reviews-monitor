@@ -1,53 +1,53 @@
 {
     "subscription-payments": {
         "1": {
-            "count": 115,
+            "count": 132,
             "last_id": "2210654"
         },
         "2": {
-            "count": 16,
+            "count": 22,
             "last_id": null
         }
     },
     "shopify-subscriptions": {
         "1": {
-            "count": 146,
+            "count": 141,
             "last_id": "2280877"
         },
         "2": {
-            "count": 63,
+            "count": 60,
             "last_id": "2279158"
         }
     },
     "kaching-subscriptions": {
         "1": {
-            "count": 6,
+            "count": 4,
             "last_id": "2232247"
         }
     },
     "seal-subscriptions": {
         "1": {
-            "count": 18,
+            "count": 15,
             "last_id": "2223158"
         },
         "2": {
-            "count": 10,
+            "count": 9,
             "last_id": "2261129"
         }
     },
     "subscriptions-by-appstle": {
         "1": {
-            "count": 40,
+            "count": 36,
             "last_id": "2276765"
         },
         "2": {
-            "count": 13,
+            "count": 8,
             "last_id": null
         }
     },
     "joy-subscription": {
         "1": {
-            "count": 5,
+            "count": 3,
             "last_id": "2209485"
         },
         "2": {
@@ -73,7 +73,7 @@
     },
     "recurpay-subscriptions": {
         "1": {
-            "count": 3,
+            "count": 2,
             "last_id": "2180805"
         },
         "2": {
@@ -95,7 +95,7 @@
     },
     "bold-subscriptions": {
         "1": {
-            "count": 47,
+            "count": 45,
             "last_id": "2251640"
         },
         "2": {
@@ -105,7 +105,7 @@
     },
     "recurring-invoices": {
         "1": {
-            "count": 8,
+            "count": 4,
             "last_id": null
         },
         "2": {
