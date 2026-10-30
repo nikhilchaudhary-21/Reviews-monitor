@@ -1,7 +1,7 @@
 {
     "subscription-payments": {
         "1": {
-            "count": 147,
+            "count": 148,
             "last_id": "2354933"
         },
         "2": {
@@ -11,12 +11,12 @@
     },
     "shopify-subscriptions": {
         "1": {
-            "count": 159,
-            "last_id": "2375153"
+            "count": 163,
+            "last_id": "2408807"
         },
         "2": {
-            "count": 68,
-            "last_id": "2377977"
+            "count": 74,
+            "last_id": "2409144"
         }
     },
     "kaching-subscriptions": {
@@ -37,7 +37,7 @@
     },
     "subscriptions-by-appstle": {
         "1": {
-            "count": 41,
+            "count": 42,
             "last_id": "2367501"
         },
         "2": {
@@ -73,11 +73,11 @@
     },
     "recurpay-subscriptions": {
         "1": {
-            "count": 3,
+            "count": 2,
             "last_id": "2180805"
         },
         "2": {
-            "count": 2,
+            "count": 1,
             "last_id": null
         }
     },
